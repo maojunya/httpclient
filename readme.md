@@ -19,3 +19,20 @@
     client.connect();
     ... ...
 ```
+
+### Build
+- 安装构件
+
+```
+mvn clean install
+```
+
+- 添加依赖
+
+```
+<dependency>
+    <groupId>cn.fh</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>1.0-RELEASE</version>
+</dependency>
+```

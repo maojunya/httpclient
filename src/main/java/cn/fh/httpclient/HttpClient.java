@@ -23,6 +23,8 @@ public class HttpClient {
     private Map<String, List<String>> headers;
     private String resp;
 
+    private String contentType;
+
     /**
      * 构造一个HttpClient对象并指定URL和请求方式
      * @param url
@@ -50,6 +52,9 @@ public class HttpClient {
         this.method = method;
     }
 
+    public void setContentType(String type) {
+        this.contentType = type;
+    }
     /**
      * 发起HTTP请求并得到响应信息。
      * 调用完成后连接会马上断开。
@@ -71,6 +76,10 @@ public class HttpClient {
                 }
             } else {
                 conn.setDoOutput(true);
+            }
+
+            if (null != this.contentType) {
+                conn.setRequestProperty("Content-Type", this.contentType);
             }
 
 
@@ -123,6 +132,7 @@ public class HttpClient {
         this.url = null;
         this.queryString = null;
         this.headers = null;
+        this.contentType = null;
     }
 
     /**
