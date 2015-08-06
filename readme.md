@@ -1,9 +1,12 @@
 ## HttpClient
 ### Quick Start
+- HTTP请求
 ```
 
 	// 创建客户端对象
 	HttpClient client = new HttpClient("http://www.baidu.com", Method.GET);
+	// 设置请求头的Content-Type字段
+	client.setContentType("XXX");
 	// 发送请求
     client.connect();
     // 得到响应
@@ -19,9 +22,15 @@
     client.connect();
     ... ...
 ```
+- HTTPS请求
+```
+	HttpClient client = new HttpClient("http://www.baidu.com", Method.GET, true);
+	client.connect();
+	... ...
+```
+
 
 ### Build
-## 使用方法
 - 下载项目
 ```
 git clone git@github.com:wanghongfei/httpclient.git
