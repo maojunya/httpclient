@@ -56,6 +56,10 @@ public class HttpClient {
         this.url = url;
     }
 
+    public void setHttps(boolean https) {
+        this.isHttps = https;
+    }
+
     /**
      * 设置query string.
      * 如果是GET请求则会加到URL之后，如果是POST则放到请求body中。
@@ -125,7 +129,7 @@ public class HttpClient {
             throw new ConnectionException("invalid URL");
         } catch (IOException e) {
             e.printStackTrace();
-            throw new ConnectionException("IO Error");
+            throw new ConnectionException("HTTP响应状态码非200");
         }
     }
 
@@ -224,7 +228,7 @@ public class HttpClient {
         Set<Map.Entry<String, List<String>>> entrySet = headerList.entrySet();
         entrySet.forEach(entry -> {
             //System.out.println("header:" + entry.getKey());
-            entry.getValue().forEach(val -> System.out.println("val = " + val));
+            //entry.getValue().forEach(val -> System.out.println("val = " + val));
         });
 
 
