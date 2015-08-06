@@ -1,13 +1,16 @@
 package cn.fh.httpclient;
 
 import cn.fh.httpclient.exception.ConnectionException;
+import cn.fh.httpclient.exception.constant.Method;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,13 +29,27 @@ public class HttpClient {
     private String contentType;
 
     /**
-     * 构造一个HttpClient对象并指定URL和请求方式
+     * 是否是HTTPS请求
+     */
+    private boolean isHttps = false;
+
+    /**
+     * 构造一个HttpClient对象并指定URL和请求方式.
+     * 默认为非HTTPS请求
      * @param url
      * @param method
      */
     public HttpClient(String url, Method method) {
         this.url = url;
         this.method = method;
+        this.isHttps = false;
+    }
+
+    public HttpClient(String url, Method method, boolean isHttps) {
+        this.url = url;
+        this.method = method;
+
+        this.isHttps = isHttps;
     }
 
     public void setUrl(String url) {
@@ -65,7 +82,8 @@ public class HttpClient {
             String url = this.url;
 
             URL u = new URL(url);
-            this.conn = (HttpURLConnection) u.openConnection();
+            this.conn = buildConnection(u);
+
             conn.setRequestMethod(method.toString());
 
             // 如果是GET请求
@@ -82,15 +100,20 @@ public class HttpClient {
                 conn.setRequestProperty("Content-Type", this.contentType);
             }
 
-
             conn.connect();
+
             // 如果是POST请求
             if (Method.POST == method) {
                 // 向服务器写入POST数据
+                if (null == queryString) {
+                    throw new IllegalStateException("No query string!");
+                }
+
                 conn.getOutputStream().write(queryString.getBytes());
                 conn.getOutputStream().flush();
             }
 
+            // 读取响应数据
             InputStream in = conn.getInputStream();
             this.resp = stream2String(in, "UTF-8");
             this.headers = conn.getHeaderFields();
@@ -133,6 +156,7 @@ public class HttpClient {
         this.queryString = null;
         this.headers = null;
         this.contentType = null;
+        this.isHttps = false;
     }
 
     /**
@@ -155,6 +179,38 @@ public class HttpClient {
         return sb.toString();
     }
 
+    /**
+     * 创建一个{@link HttpURLConnection}对象。
+     * 如果URL中的Schema字段为HTTPS，则返回{@link HttpsURLConnection}对象
+     *
+     * @param u
+     * @return
+     * @throws ConnectionException
+     * @throws IOException
+     */
+    protected HttpURLConnection buildConnection(URL u) throws ConnectionException, IOException {
+        HttpURLConnection httpConn = null;
+
+        URLConnection urlConn = u.openConnection();
+
+        // 判断是不是一个HTTP连接
+        if (false == urlConn instanceof HttpURLConnection) {
+            throw new ConnectionException("Invalid HTTP URL");
+        }
+        httpConn = (HttpURLConnection) urlConn;
+
+        // 是否设置了HTTPS标记位
+        if (isHttps) {
+            // 判断打开的连接是否是HTTPS连接
+            if (false == urlConn instanceof HttpsURLConnection) {
+                throw new ConnectionException("URL不符合HTTPS格式");
+            }
+
+        }
+
+        return httpConn;
+    }
+
     public static void main(String[] args) throws Exception {
         // GET
         HttpClient client = new HttpClient("http://www.baidu.com", Method.GET);
@@ -163,11 +219,11 @@ public class HttpClient {
         String resp = client.getResponse();
         Map<String, List<String >> headerList = client.getHeaders();
 
-        System.out.println(resp);
+        //System.out.println(resp);
 
         Set<Map.Entry<String, List<String>>> entrySet = headerList.entrySet();
         entrySet.forEach(entry -> {
-            System.out.println("header:" + entry.getKey());
+            //System.out.println("header:" + entry.getKey());
             entry.getValue().forEach(val -> System.out.println("val = " + val));
         });
 
@@ -176,6 +232,19 @@ public class HttpClient {
         client.reset();
         // POST
         client.setUrl("http://120.24.218.56/api/user/name");
+        client.setQueryString("username=hanxinxin");
+        client.setMethod(Method.POST);
+        client.connect();
+        resp = client.getResponse();
+        //System.out.println(resp);
+
+
+
+        // HTTPS Test
+        client.reset();
+        // POST
+        //client.setUrl("https://kyfw.12306.cn/otn/leftTicket/init");
+        client.setUrl("https://m.jdpay.com/wepay/query");
         client.setQueryString("username=hanxinxin");
         client.setMethod(Method.POST);
         client.connect();
