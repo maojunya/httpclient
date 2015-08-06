@@ -21,14 +21,16 @@
 ```
 
 ### Build
-- 安装构件
-
+## 使用方法
+- 下载项目
+```
+git clone git@github.com:wanghongfei/httpclient.git
+```
+- 构建
 ```
 mvn clean install
 ```
-
 - 添加依赖
-
 ```
 <dependency>
     <groupId>cn.fh</groupId>
